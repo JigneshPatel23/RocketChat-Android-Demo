@@ -7,10 +7,10 @@
     <string name="date_header_yesterday">Yesterday</string>
     <string name="input_message">Say something cool</string>
     <string name="username">Name</string>
-    <string name="register">Register</string>
     <string name="no_internet">No internet connection!</string>
     <string name="disconnected_from_server">Disconnected from server!</string>
     <string name="connection_error">Connection error!</string>
     <string name="connected">Connected to server!</string>
     <string name="password">Password</string>
+    <string name="login">Login</string>
 </resources>
