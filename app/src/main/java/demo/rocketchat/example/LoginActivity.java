@@ -80,4 +80,10 @@ public class LoginActivity extends MyAdapterActivity {
             }
         });
     }
+
+    @Override
+    protected void onDestroy() {
+        api.getConnectivityManager().unRegister(this);
+        super.onDestroy();
+    }
 }
