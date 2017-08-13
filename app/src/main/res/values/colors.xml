@@ -1,5 +1,4 @@
 <resources>
-
     <color name="cornflower_blue">#6274e2</color>
     <color name="cornflower_blue_dark">#303F9F</color>
     <color name="cornflower_blue_darkest">#2d3a93</color>
@@ -17,5 +16,7 @@
     <color name="green_dark">#2da346</color>
     <color name="red">#e94f4f</color>
     <color name="brown">#4e342e</color>
-
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
 </resources>
