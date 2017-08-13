@@ -9,7 +9,9 @@ import android.view.View;
 import demo.rocketchat.example.activity.MyAdapterActivity;
 import demo.rocketchat.example.application.RocketChatApplication;
 import demo.rocketchat.example.utils.AppUtils;
+import io.rocketchat.common.data.model.ErrorObject;
 import io.rocketchat.core.RocketChatAPI;
+import io.rocketchat.core.model.TokenObject;
 
 public class LoginActivity extends MyAdapterActivity {
 
@@ -32,6 +34,25 @@ public class LoginActivity extends MyAdapterActivity {
         api.setReconnectionStrategy(null);
         api.setPingInterval(3000);
         api.connect(this);
+
+        login.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String uname = username.getText().toString();
+                String passwd = password.getText().toString();
+
+                if (! (uname.equals("") || passwd.equals(""))) {
+                    api.login(uname, passwd, LoginActivity.this);
+                }else {
+                    AppUtils.showToast(LoginActivity.this, "Username or password shouldn't be null", true);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onLogin(TokenObject token, ErrorObject error) {
+        AppUtils.showToast(this, "Login successful", true);
     }
 
     @Override
