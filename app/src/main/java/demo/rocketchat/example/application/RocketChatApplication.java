@@ -10,7 +10,7 @@ import io.rocketchat.core.RocketChatAPI;
 
 public class RocketChatApplication extends Application {
 
-    public static String url = "wss://demo.rocket.chat/websocket/";
+    public static String url = "https://demo.rocket.chat/websocket";
 
     RocketChatAPI rocketChatAPI;
 
