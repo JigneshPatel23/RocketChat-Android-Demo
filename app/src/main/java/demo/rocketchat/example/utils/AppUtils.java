@@ -1,6 +1,5 @@
 package demo.rocketchat.example.utils;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.StringRes;
@@ -19,12 +18,7 @@ public class AppUtils {
     }
 
     public static void showToast(final Context context, final String text, final boolean isLong) {
-        ((Activity)context).runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(context, text, isLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
-            }
-        });
+        Toast.makeText(context, text, isLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
     }
 
     public static Snackbar getSnackbar(View v, int message) {

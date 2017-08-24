@@ -24,6 +24,8 @@ android {
     }
 }
 
+def AAVersion = "4.3.1"
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -31,7 +33,10 @@ dependencies {
     })
     testCompile 'junit:junit:4.12'
     compile 'com.github.stfalcon:chatkit:0.2.1'
-    compile ('io.rocketchat:rocketchatjavasdk:0.6.5'){
+    compile ('com.rocketchat.core:rocketchat-core:0.7.1'){
         exclude group :'org.json', module: 'json'
     }
+
+    annotationProcessor "org.androidannotations:androidannotations:$AAVersion"
+    compile "org.androidannotations:androidannotations-api:$AAVersion"
 }

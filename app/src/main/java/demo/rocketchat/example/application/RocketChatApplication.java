@@ -2,7 +2,7 @@ package demo.rocketchat.example.application;
 
 import android.app.Application;
 
-import io.rocketchat.core.RocketChatAPI;
+import com.rocketchat.core.RocketChatAPI;
 
 /**
  * Created by sachin on 13/8/17.
@@ -22,4 +22,5 @@ public class RocketChatApplication extends Application {
     public RocketChatAPI getRocketChatAPI() {
         return rocketChatAPI;
     }
+
 }

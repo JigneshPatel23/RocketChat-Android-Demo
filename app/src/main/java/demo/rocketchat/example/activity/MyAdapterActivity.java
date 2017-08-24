@@ -2,28 +2,29 @@ package demo.rocketchat.example.activity;
 
 import android.support.v7.app.AppCompatActivity;
 
+import com.rocketchat.common.data.model.ErrorObject;
+import com.rocketchat.common.data.model.UserObject;
+import com.rocketchat.common.listener.ConnectListener;
+import com.rocketchat.common.listener.TypingListener;
+import com.rocketchat.core.callback.AccountListener;
+import com.rocketchat.core.callback.EmojiListener;
+import com.rocketchat.core.callback.GetSubscriptionListener;
+import com.rocketchat.core.callback.HistoryListener;
+import com.rocketchat.core.callback.LoginListener;
+import com.rocketchat.core.callback.MessageListener;
+import com.rocketchat.core.callback.RoomListener;
+import com.rocketchat.core.callback.UserListener;
+import com.rocketchat.core.model.Emoji;
+import com.rocketchat.core.model.Permission;
+import com.rocketchat.core.model.PublicSetting;
+import com.rocketchat.core.model.RocketChatMessage;
+import com.rocketchat.core.model.RoomObject;
+import com.rocketchat.core.model.RoomRole;
+import com.rocketchat.core.model.SubscriptionObject;
+import com.rocketchat.core.model.TokenObject;
+
 import java.util.List;
 
-import io.rocketchat.common.data.model.ErrorObject;
-import io.rocketchat.common.data.model.UserObject;
-import io.rocketchat.common.listener.ConnectListener;
-import io.rocketchat.common.listener.TypingListener;
-import io.rocketchat.core.callback.AccountListener;
-import io.rocketchat.core.callback.EmojiListener;
-import io.rocketchat.core.callback.GetSubscriptionListener;
-import io.rocketchat.core.callback.HistoryListener;
-import io.rocketchat.core.callback.LoginListener;
-import io.rocketchat.core.callback.MessageListener;
-import io.rocketchat.core.callback.RoomListener;
-import io.rocketchat.core.callback.UserListener;
-import io.rocketchat.core.model.Emoji;
-import io.rocketchat.core.model.Permission;
-import io.rocketchat.core.model.PublicSetting;
-import io.rocketchat.core.model.RocketChatMessage;
-import io.rocketchat.core.model.RoomObject;
-import io.rocketchat.core.model.RoomRole;
-import io.rocketchat.core.model.SubscriptionObject;
-import io.rocketchat.core.model.TokenObject;
 
 /**
  * Created by sachin on 13/8/17.
