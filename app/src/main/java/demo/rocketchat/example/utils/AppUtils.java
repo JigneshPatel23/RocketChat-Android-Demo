@@ -22,7 +22,7 @@ public class AppUtils {
     }
 
     public static Snackbar getSnackbar(View v, int message) {
-        Snackbar snackbar=Snackbar.make(v,message,Snackbar.LENGTH_INDEFINITE);
+        Snackbar snackbar = Snackbar.make(v, message, Snackbar.LENGTH_INDEFINITE);
         snackbar.setActionTextColor(Color.RED);
         // Changing action button text color
         View sbView = snackbar.getView();

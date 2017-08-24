@@ -1,5 +1,6 @@
 package demo.rocketchat.example;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.AppCompatButton;
@@ -64,6 +65,8 @@ public class LoginActivity extends MyAdapterActivity {
     public void onLogin(TokenObject token, ErrorObject error) {
         if (error == null) {
             AppUtils.showToast(this, "Login successful", true);
+            Intent intent = new Intent(this, RoomActivity_.class);
+            startActivity(intent);
         } else {
             AppUtils.showToast(this, error.getMessage(), true);
         }
