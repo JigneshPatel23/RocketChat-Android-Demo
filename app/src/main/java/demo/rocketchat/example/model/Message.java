@@ -1,5 +1,6 @@
 package demo.rocketchat.example.model;
 
+import com.rocketchat.core.model.RocketChatMessage;
 import com.stfalcon.chatkit.commons.models.IMessage;
 
 import java.util.Date;
@@ -24,6 +25,13 @@ public class Message implements IMessage{
         this.text = text;
         this.user = user;
         this.createdAt = createdAt;
+    }
+
+    public Message (RocketChatMessage message) {
+        id = message.getMessageId();
+        text = message.getMessage();
+        createdAt = message.getMsgTimestamp();
+        user = new User(message.getSender());
     }
 
     @Override
