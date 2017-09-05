@@ -2,6 +2,7 @@ package demo.rocketchat.example.adapter;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,6 +56,13 @@ public class MyCustomAdapter extends RecyclerView.Adapter<MyCustomAdapter.MyView
                 .placeholder(drawable)
                 .error(drawable)
                 .into(holder.imageView);
+
+        holder.room.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
     }
 
     @Override
@@ -63,11 +71,13 @@ public class MyCustomAdapter extends RecyclerView.Adapter<MyCustomAdapter.MyView
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
+        CardView room;
         TextView textView;
         ImageView imageView;
 
         public MyViewHolder(View itemView) {
             super(itemView);
+            room = (CardView) itemView.findViewById(R.id.card_view);
             textView = (TextView) itemView.findViewById(R.id.channel);
             imageView = (ImageView) itemView.findViewById(R.id.image_view);
         }
