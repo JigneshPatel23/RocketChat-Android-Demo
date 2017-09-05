@@ -1,6 +1,7 @@
 package demo.rocketchat.example.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -10,13 +11,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.rocketchat.common.data.model.Room;
 import com.rocketchat.common.utils.Utils;
 import com.rocketchat.core.model.SubscriptionObject;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import demo.rocketchat.example.ChatActivity_;
 import demo.rocketchat.example.R;
 import demo.rocketchat.example.utils.UserAvatarHelper;
 import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
@@ -57,10 +58,11 @@ public class MyCustomAdapter extends RecyclerView.Adapter<MyCustomAdapter.MyView
                 .error(drawable)
                 .into(holder.imageView);
 
-        holder.room.setOnClickListener(new View.OnClickListener() {
+        holder.roomItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Intent intent = new Intent(context, ChatActivity_.class);
+                context.startActivity(intent);
             }
         });
     }
@@ -71,13 +73,13 @@ public class MyCustomAdapter extends RecyclerView.Adapter<MyCustomAdapter.MyView
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        CardView room;
+        CardView roomItem;
         TextView textView;
         ImageView imageView;
 
         public MyViewHolder(View itemView) {
             super(itemView);
-            room = (CardView) itemView.findViewById(R.id.card_view);
+            roomItem = (CardView) itemView.findViewById(R.id.card_view);
             textView = (TextView) itemView.findViewById(R.id.channel);
             imageView = (ImageView) itemView.findViewById(R.id.image_view);
         }
