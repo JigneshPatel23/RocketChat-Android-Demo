@@ -21,7 +21,7 @@ public class RocketChatApplication extends Application {
         rocketChatAPI = new RocketChatAPI(url);
         Picasso.Builder builder = new Picasso.Builder(this);
         Picasso built = builder.build();
-        built.setIndicatorsEnabled(true);
+//        built.setIndicatorsEnabled(true);
         built.setLoggingEnabled(true);
         Picasso.setSingletonInstance(built);
     }

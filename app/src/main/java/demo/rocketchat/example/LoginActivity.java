@@ -1,6 +1,7 @@
 package demo.rocketchat.example;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.AppCompatButton;
@@ -12,6 +13,7 @@ import com.rocketchat.common.network.Socket;
 import com.rocketchat.core.RocketChatAPI;
 import com.rocketchat.core.model.TokenObject;
 
+import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.UiThread;
@@ -36,6 +38,9 @@ public class LoginActivity extends MyAdapterActivity {
 
     RocketChatAPI api;
 
+    private SharedPreferences.Editor editor;
+    private SharedPreferences sharedPref;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +48,19 @@ public class LoginActivity extends MyAdapterActivity {
         api = ((RocketChatApplication) getApplicationContext()).getRocketChatAPI();
         api.setReconnectionStrategy(null);
         api.connect(this);
+        sharedPref = getPreferences(MODE_PRIVATE);
+        editor = sharedPref.edit();
+
+    }
+
+    @AfterViews
+    void afterViewSetUp() {
+        String Username = sharedPref.getString("username", null);
+        String Password = sharedPref.getString("password", null);
+        if (Username != null) {
+            username.setText(Username);
+            password.setText(Password);
+        }
     }
 
     @Click(R.id.login)
@@ -64,6 +82,9 @@ public class LoginActivity extends MyAdapterActivity {
     @Override
     public void onLogin(TokenObject token, ErrorObject error) {
         if (error == null) {
+            editor.putString("username", username.getText().toString());
+            editor.putString("password", password.getText().toString());
+            editor.commit();
             AppUtils.showToast(this, "Login successful", true);
             Intent intent = new Intent(this, RoomActivity_.class);
             startActivity(intent);
