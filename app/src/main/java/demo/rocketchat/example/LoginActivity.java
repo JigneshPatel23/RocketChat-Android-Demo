@@ -67,6 +67,7 @@ public class LoginActivity extends MyAdapterActivity {
             AppUtils.showToast(this, "Login successful", true);
             Intent intent = new Intent(this, RoomActivity_.class);
             startActivity(intent);
+            finish();
         } else {
             AppUtils.showToast(this, error.getMessage(), true);
         }

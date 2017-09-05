@@ -13,6 +13,8 @@ import android.widget.TextView;
 
 import com.rocketchat.common.utils.Utils;
 import com.rocketchat.core.model.SubscriptionObject;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -26,12 +28,12 @@ import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
  * Created by aniket on 05/09/17.
  */
 
-public class MyCustomAdapter extends RecyclerView.Adapter<MyCustomAdapter.MyViewHolder> {
+public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> {
 
     private List<SubscriptionObject> roomObjects;
     Context context;
 
-    public MyCustomAdapter(List<SubscriptionObject> roomObjects, Context context) {
+    public RoomAdapter(List<SubscriptionObject> roomObjects, Context context) {
         this.roomObjects = roomObjects;
         this.context = context;
     }
@@ -46,22 +48,37 @@ public class MyCustomAdapter extends RecyclerView.Adapter<MyCustomAdapter.MyView
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
-        String roomName = roomObjects.get(position).getRoomName();
+    public void onBindViewHolder(final MyViewHolder holder, final int position) {
+        final String roomName = roomObjects.get(position).getRoomName();
         holder.textView.setText(roomName);
-        Drawable drawable = UserAvatarHelper.getTextDrawable(roomName, context);
+        final Drawable drawable = UserAvatarHelper.getTextDrawable(roomName, context);
 
         Picasso.with(context)
                 .load(Utils.getAvatar(roomName))
+                .networkPolicy(NetworkPolicy.OFFLINE)
                 .transform(new RoundedCornersTransformation(UserAvatarHelper.getRadius(context),0))
                 .placeholder(drawable)
-                .error(drawable)
-                .into(holder.imageView);
+                .into(holder.imageView, new Callback() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+                    @Override
+                    public void onError() {
+                        Picasso.with(context)
+                                .load(Utils.getAvatar(roomName))
+                                .transform(new RoundedCornersTransformation(UserAvatarHelper.getRadius(context),0))
+                                .placeholder(drawable)
+                                .error(drawable)
+                                .into(holder.imageView);
+                    }
+                });
 
         holder.roomItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(context, ChatActivity_.class);
+                intent.putExtra("roomId",roomObjects.get(position).getRoomId());
                 context.startActivity(intent);
             }
         });
