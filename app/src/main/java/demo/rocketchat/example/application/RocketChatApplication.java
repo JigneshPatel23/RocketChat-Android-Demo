@@ -16,6 +16,7 @@ public class RocketChatApplication extends Application {
 
     @Override
     public void onCreate() {
+        super.onCreate();
         rocketChatAPI = new RocketChatAPI(url);
     }
 
