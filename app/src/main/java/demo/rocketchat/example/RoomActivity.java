@@ -2,33 +2,81 @@ package demo.rocketchat.example;
 
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.MenuItem;
 import android.view.View;
 
+import com.rocketchat.common.data.model.ErrorObject;
 import com.rocketchat.core.RocketChatAPI;
+import com.rocketchat.core.model.SubscriptionObject;
 
+import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.UiThread;
+import org.androidannotations.annotations.ViewById;
+
+import java.util.List;
 
 import demo.rocketchat.example.activity.MyAdapterActivity;
+import demo.rocketchat.example.adapter.RoomAdapter;
 import demo.rocketchat.example.application.RocketChatApplication;
 import demo.rocketchat.example.utils.AppUtils;
 
-@EActivity (R.layout.activity_room)
-public class RoomActivity extends MyAdapterActivity{
+@EActivity(R.layout.activity_room)
+public class RoomActivity extends MyAdapterActivity {
 
     RocketChatAPI api;
+    private RecyclerView.Adapter adapter;
+    private RecyclerView.LayoutManager layoutManager;
+
+    @ViewById(R.id.my_recycler_view)
+    RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        api = ((RocketChatApplication)getApplicationContext()).getRocketChatAPI();
+        getSupportActionBar().setTitle("Chat Rooms");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        api = ((RocketChatApplication) getApplicationContext()).getRocketChatAPI();
         api.getConnectivityManager().register(this);
+        api.subscribeActiveUsers(null);
+        api.subscribeUserData(null);
+        api.getSubscriptions(this);
         super.onCreate(savedInstanceState);
+    }
+
+    @AfterViews
+    void afterViewsSet() {
+        recyclerView.setHasFixedSize(true);
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
     }
 
 
     @UiThread
     @Override
+    public void onGetSubscriptions(List<SubscriptionObject> subscriptions, ErrorObject error) {
+        adapter = new RoomAdapter(subscriptions, this);
+        api.getChatRoomFactory().createChatRooms(subscriptions);
+        recyclerView.setAdapter(adapter);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int i = item.getItemId();
+        if (i == android.R.id.home) {
+            onBackPressed();
+        }
+        return true;
+    }
+
+    @UiThread
+    @Override
     public void onConnect(String sessionID) {
+        api.subscribeActiveUsers(null);
+        api.subscribeUserData(null);
         Snackbar
                 .make(findViewById(R.id.activity_room), R.string.connected, Snackbar.LENGTH_LONG)
                 .show();
