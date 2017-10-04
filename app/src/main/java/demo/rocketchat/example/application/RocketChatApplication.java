@@ -2,7 +2,9 @@ package demo.rocketchat.example.application;
 
 import android.app.Application;
 
-import com.rocketchat.core.RocketChatAPI;
+import com.rocketchat.common.network.ReconnectionStrategy;
+import com.rocketchat.common.utils.Logger;
+import com.rocketchat.core.RocketChatClient;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -11,14 +13,23 @@ import com.squareup.picasso.Picasso;
 
 public class RocketChatApplication extends Application {
 
-    public static String url = "https://demo.rocket.chat";
+    RocketChatClient client;
 
-    RocketChatAPI rocketChatAPI;
+    private static String serverurl = "wss://demo.rocket.chat/websocket";
+    private static String baseUrl = "https://demo.rocket.chat/api/v1/";
 
     @Override
     public void onCreate() {
         super.onCreate();
-        rocketChatAPI = new RocketChatAPI(url);
+        client = new RocketChatClient.Builder()
+                .websocketUrl(serverurl)
+                .restBaseUrl(baseUrl)
+                .logger(logger)
+                .build();
+
+        client.setReconnectionStrategy(new ReconnectionStrategy(20, 3000));
+
+
         Picasso.Builder builder = new Picasso.Builder(this);
         Picasso built = builder.build();
 //        built.setIndicatorsEnabled(true);
@@ -26,8 +37,24 @@ public class RocketChatApplication extends Application {
         Picasso.setSingletonInstance(built);
     }
 
-    public RocketChatAPI getRocketChatAPI() {
-        return rocketChatAPI;
+    public RocketChatClient getRocketChatAPI() {
+        return client;
     }
 
+    Logger logger = new Logger() {
+        @Override
+        public void info(String format, Object... args) {
+            System.out.println(format + " " +  args);
+        }
+
+        @Override
+        public void warning(String format, Object... args) {
+            System.out.println(format + " " +  args);
+        }
+
+        @Override
+        public void debug(String format, Object... args) {
+            System.out.println(format + " " +  args);
+        }
+    };
 }

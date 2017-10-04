@@ -1,6 +1,6 @@
 package demo.rocketchat.example.model;
 
-import com.rocketchat.common.data.model.UserObject;
+import com.rocketchat.common.utils.Utils;
 import com.stfalcon.chatkit.commons.models.IUser;
 
 /*
@@ -20,10 +20,10 @@ public class User implements IUser {
         this.online = online;
     }
 
-    public User (UserObject user) {
-        this.id = user.getUserId();
-        this.name = user.getUserName();
-        this.avatar = user.getAvatarUrl();
+    public User (com.rocketchat.common.data.model.User user) {
+        this.id = user.id();
+        this.name = user.username();
+        this.avatar = Utils.getAvatar(user.username());
     }
 
     @Override

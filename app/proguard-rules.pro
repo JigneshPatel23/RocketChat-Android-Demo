@@ -16,3 +16,11 @@
 #   public *;
 #}
 -dontwarn com.squareup.okhttp.**
+-dontwarn com.google.auto.value.**
+-dontwarn okio.**
+-dontwarn javax.annotation.**
+-keepclasseswithmembers class * {
+    @com.squareup.moshi.* <methods>;
+}
+-keep @com.squareup.moshi.JsonQualifier interface *
+-keepclassmembers class com.rocketchat.common.data.model.** { <fields>; }

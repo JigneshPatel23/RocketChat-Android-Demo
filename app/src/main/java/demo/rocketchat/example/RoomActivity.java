@@ -8,9 +8,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.rocketchat.common.data.model.ErrorObject;
-import com.rocketchat.core.RocketChatAPI;
-import com.rocketchat.core.model.SubscriptionObject;
+import com.rocketchat.common.RocketChatException;
+import com.rocketchat.common.listener.SimpleListCallback;
+import com.rocketchat.core.RocketChatClient;
+import com.rocketchat.core.model.Subscription;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
@@ -27,7 +28,7 @@ import demo.rocketchat.example.utils.AppUtils;
 @EActivity(R.layout.activity_room)
 public class RoomActivity extends MyAdapterActivity {
 
-    RocketChatAPI api;
+    RocketChatClient api;
     private RecyclerView.Adapter adapter;
     private RecyclerView.LayoutManager layoutManager;
 
@@ -39,11 +40,28 @@ public class RoomActivity extends MyAdapterActivity {
         getSupportActionBar().setTitle("Chat Rooms");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         api = ((RocketChatApplication) getApplicationContext()).getRocketChatAPI();
-        api.getConnectivityManager().register(this);
+        api.getWebsocketImpl().getConnectivityManager().register(this);
         api.subscribeActiveUsers(null);
         api.subscribeUserData(null);
-        api.getSubscriptions(this);
+        api.getSubscriptions(new SimpleListCallback<Subscription>() {
+            @Override
+            public void onSuccess(List<Subscription> list) {
+                RoomActivity.this.onGetSubscriptions(list);
+            }
+
+            @Override
+            public void onError(RocketChatException error) {
+
+            }
+        });
         super.onCreate(savedInstanceState);
+    }
+
+    @UiThread
+    public void onGetSubscriptions(List<Subscription> list) {
+        adapter = new RoomAdapter(list, RoomActivity.this);
+        api.getChatRoomFactory().createChatRooms(list);
+        recyclerView.setAdapter(adapter);
     }
 
     @AfterViews
@@ -54,14 +72,6 @@ public class RoomActivity extends MyAdapterActivity {
         recyclerView.setItemAnimator(new DefaultItemAnimator());
     }
 
-
-    @UiThread
-    @Override
-    public void onGetSubscriptions(List<SubscriptionObject> subscriptions, ErrorObject error) {
-        adapter = new RoomAdapter(subscriptions, this);
-        api.getChatRoomFactory().createChatRooms(subscriptions);
-        recyclerView.setAdapter(adapter);
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -75,8 +85,8 @@ public class RoomActivity extends MyAdapterActivity {
     @UiThread
     @Override
     public void onConnect(String sessionID) {
-        api.subscribeActiveUsers(null);
-        api.subscribeUserData(null);
+//        api.subscribeActiveUser(null);
+//        api.subscribeUserData(null);
         Snackbar
                 .make(findViewById(R.id.activity_room), R.string.connected, Snackbar.LENGTH_LONG)
                 .show();
@@ -89,7 +99,7 @@ public class RoomActivity extends MyAdapterActivity {
                 .setAction("RETRY", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        api.reconnect();
+                        api.getWebsocketImpl().getSocket().reconnect();
                     }
                 })
                 .show();
@@ -98,12 +108,13 @@ public class RoomActivity extends MyAdapterActivity {
 
     @UiThread
     @Override
-    public void onConnectError(Exception websocketException) {
+    public void onConnectError(Throwable websocketException) {
         AppUtils.getSnackbar(findViewById(R.id.activity_room), R.string.connection_error)
                 .setAction("RETRY", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        api.reconnect();
+                        api.getWebsocketImpl().getSocket().reconnect();
+
                     }
                 })
                 .show();
@@ -111,7 +122,7 @@ public class RoomActivity extends MyAdapterActivity {
 
     @Override
     protected void onDestroy() {
-        api.getConnectivityManager().unRegister(this);
+        api.getWebsocketImpl().getConnectivityManager().unRegister(this);
         super.onDestroy();
     }
 }

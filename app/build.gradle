@@ -14,7 +14,7 @@ android {
     }
     buildTypes {
         debug {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         release {
@@ -33,7 +33,7 @@ dependencies {
     })
     testCompile 'junit:junit:4.12'
     compile 'com.github.stfalcon:chatkit:0.2.1'
-    compile ('com.rocketchat.core:rocketchat-core:0.7.1'){
+    compile ('com.rocketchat.core:rocketchat-core:0.7.1.4') {
         exclude group :'org.json', module: 'json'
     }
     compile 'com.squareup.picasso:picasso:2.5.2'

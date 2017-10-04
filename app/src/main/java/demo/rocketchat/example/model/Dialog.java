@@ -1,10 +1,13 @@
 package demo.rocketchat.example.model;
 
-import com.rocketchat.common.data.model.Room;
+
+import com.rocketchat.common.data.model.BaseRoom;
 import com.rocketchat.common.utils.Utils;
+import com.rocketchat.core.model.Subscription;
 import com.stfalcon.chatkit.commons.models.IDialog;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by sachin on 25/8/17.
@@ -31,12 +34,13 @@ public class Dialog implements IDialog<Message> {
         this.unreadCount = unreadCount;
     }
 
-    public Dialog (Room room) {
-        this.id = room.getRoomId();
-        this.dialogPhoto = Utils.getAvatar(room.getRoomName());
-        this.dialogName = room.getRoomName();
-        users = null;
-        lastMessage = null;
+    public Dialog (BaseRoom room) {
+        this.id = room.roomId();
+        this.dialogPhoto = Utils.getAvatar(room.name());
+        System.out.println("Room name is "+ Utils.getAvatar(room.name()));
+        this.dialogName = room.name();
+        users = new ArrayList<>();
+        lastMessage = new Message(Utils.shortUUID(), new User(room.user()), "This is a sample room", (new Date(((Subscription)room).updatedAt())));
         unreadCount = 0;
     }
 

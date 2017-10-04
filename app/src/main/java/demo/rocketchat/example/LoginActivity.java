@@ -8,10 +8,11 @@ import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatEditText;
 import android.view.View;
 
-import com.rocketchat.common.data.model.ErrorObject;
+import com.rocketchat.common.RocketChatException;
 import com.rocketchat.common.network.Socket;
-import com.rocketchat.core.RocketChatAPI;
-import com.rocketchat.core.model.TokenObject;
+import com.rocketchat.core.RocketChatClient;
+import com.rocketchat.core.callback.LoginCallback;
+import com.rocketchat.core.model.Token;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
@@ -36,7 +37,7 @@ public class LoginActivity extends MyAdapterActivity {
     @ViewById(R.id.login)
     AppCompatButton login;
 
-    RocketChatAPI api;
+    RocketChatClient api;
 
     private SharedPreferences.Editor editor;
     private SharedPreferences sharedPref;
@@ -63,13 +64,39 @@ public class LoginActivity extends MyAdapterActivity {
         }
     }
 
+    @UiThread
+    void onLoginSuccess(Token token) {
+        editor.putString("username", username.getText().toString());
+        editor.putString("password", password.getText().toString());
+        editor.commit();
+        AppUtils.showToast(LoginActivity.this, "Login successful", true);
+        Intent intent = new Intent(LoginActivity.this, RoomActivity_.class);
+        startActivity(intent);
+        finish();
+    }
+
+    @UiThread
+    void onLoginError(RocketChatException error) {
+        AppUtils.showToast(LoginActivity.this, error.getMessage(), true);
+    }
+
     @Click(R.id.login)
     void onLoginButtonClicked() {
-        if (api.getState() == Socket.State.CONNECTED) {
+        if (api.getWebsocketImpl().getSocket().getState() == Socket.State.CONNECTED) {
             String uname = username.getText().toString();
             String passwd = password.getText().toString();
             if (!(uname.equals("") || passwd.equals(""))) {
-                api.login(uname, passwd, LoginActivity.this);
+                api.login(uname, passwd, new LoginCallback() {
+                    @Override
+                    public void onLoginSuccess(Token token) {
+                        LoginActivity.this.onLoginSuccess(token);
+                    }
+
+                    @Override
+                    public void onError(RocketChatException error) {
+                        LoginActivity.this.onLoginError(error);
+                    }
+                });
             } else {
                 AppUtils.showToast(LoginActivity.this, "Username or password shouldn't be null", true);
             }
@@ -78,21 +105,6 @@ public class LoginActivity extends MyAdapterActivity {
         }
     }
 
-    @UiThread
-    @Override
-    public void onLogin(TokenObject token, ErrorObject error) {
-        if (error == null) {
-            editor.putString("username", username.getText().toString());
-            editor.putString("password", password.getText().toString());
-            editor.commit();
-            AppUtils.showToast(this, "Login successful", true);
-            Intent intent = new Intent(this, RoomActivity_.class);
-            startActivity(intent);
-            finish();
-        } else {
-            AppUtils.showToast(this, error.getMessage(), true);
-        }
-    }
 
     @UiThread
     @Override
@@ -109,7 +121,7 @@ public class LoginActivity extends MyAdapterActivity {
                 .setAction("RETRY", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        api.reconnect();
+                        api.getWebsocketImpl().getSocket().reconnect();
                     }
                 })
                 .show();
@@ -118,22 +130,22 @@ public class LoginActivity extends MyAdapterActivity {
 
     @UiThread
     @Override
-    public void onConnectError(Exception websocketException) {
+    public void onConnectError(Throwable websocketException) {
         AppUtils.getSnackbar(findViewById(R.id.activity_login), R.string.connection_error)
                 .setAction("RETRY", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        api.reconnect();
+                        api.getWebsocketImpl().getSocket().reconnect();
+
 
                     }
                 })
                 .show();
-
     }
 
     @Override
     protected void onDestroy() {
-        api.getConnectivityManager().unRegister(this);
+        api.getWebsocketImpl().getConnectivityManager().unRegister(this);
         super.onDestroy();
     }
 

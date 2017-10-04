@@ -2,26 +2,20 @@ package demo.rocketchat.example.activity;
 
 import android.support.v7.app.AppCompatActivity;
 
-import com.rocketchat.common.data.model.ErrorObject;
-import com.rocketchat.common.data.model.UserObject;
+import com.rocketchat.common.RocketChatApiException;
+import com.rocketchat.common.data.model.User;
 import com.rocketchat.common.listener.ConnectListener;
 import com.rocketchat.common.listener.TypingListener;
 import com.rocketchat.core.callback.AccountListener;
 import com.rocketchat.core.callback.EmojiListener;
 import com.rocketchat.core.callback.GetSubscriptionListener;
-import com.rocketchat.core.callback.HistoryListener;
-import com.rocketchat.core.callback.LoginListener;
-import com.rocketchat.core.callback.MessageListener;
-import com.rocketchat.core.callback.RoomListener;
+import com.rocketchat.core.callback.MessageCallback;
 import com.rocketchat.core.callback.UserListener;
 import com.rocketchat.core.model.Emoji;
+import com.rocketchat.core.model.Message;
 import com.rocketchat.core.model.Permission;
 import com.rocketchat.core.model.PublicSetting;
-import com.rocketchat.core.model.RocketChatMessage;
-import com.rocketchat.core.model.RoomObject;
-import com.rocketchat.core.model.RoomRole;
-import com.rocketchat.core.model.SubscriptionObject;
-import com.rocketchat.core.model.TokenObject;
+import com.rocketchat.core.model.Subscription;
 
 import java.util.List;
 
@@ -32,43 +26,13 @@ import java.util.List;
 
 public class MyAdapterActivity extends AppCompatActivity
         implements ConnectListener,
-        HistoryListener,
-        LoginListener,
         AccountListener.getPermissionsListener,
         AccountListener.getPublicSettingsListener,
-        RoomListener.GetRoomListener,
-        RoomListener.RoomRolesListener,
-        RoomListener.GetMembersListener,
         EmojiListener,
         GetSubscriptionListener,
         UserListener.getUserRoleListener,
-        MessageListener.MessageAckListener,
-        MessageListener.SubscriptionListener,
+        MessageCallback.SubscriptionCallback,
         TypingListener {
-    @Override
-    public void onLoadHistory(List<RocketChatMessage> list, int unreadNotLoaded, ErrorObject error) {
-
-    }
-
-    @Override
-    public void onLogin(TokenObject token, ErrorObject error) {
-
-    }
-
-    @Override
-    public void onGetRooms(List<RoomObject> rooms, ErrorObject error) {
-
-    }
-
-    @Override
-    public void onGetSubscriptions(List<SubscriptionObject> subscriptions, ErrorObject error) {
-
-    }
-
-    @Override
-    public void onUserRoles(List<UserObject> users, ErrorObject error) {
-
-    }
 
     @Override
     public void onConnect(String sessionID) {
@@ -81,37 +45,7 @@ public class MyAdapterActivity extends AppCompatActivity
     }
 
     @Override
-    public void onConnectError(Exception websocketException) {
-
-    }
-
-    @Override
-    public void onMessageAck(RocketChatMessage message, ErrorObject error) {
-
-    }
-
-    @Override
-    public void onMessage(String roomId, RocketChatMessage message) {
-
-    }
-
-    @Override
-    public void onGetPermissions(List<Permission> permissions, ErrorObject error) {
-
-    }
-
-    @Override
-    public void onGetPublicSettings(List<PublicSetting> settings, ErrorObject error) {
-
-    }
-
-    @Override
-    public void onGetRoomRoles(List<RoomRole> roles, ErrorObject error) {
-
-    }
-
-    @Override
-    public void onListCustomEmoji(List<Emoji> emojis, ErrorObject error) {
+    public void onConnectError(Throwable websocketException) {
 
     }
 
@@ -121,7 +55,33 @@ public class MyAdapterActivity extends AppCompatActivity
     }
 
     @Override
-    public void onGetRoomMembers(Integer total, List<UserObject> members, ErrorObject error) {
+    public void onGetPermissions(List<Permission> permissions, RocketChatApiException error) {
+
+    }
+
+    @Override
+    public void onGetPublicSettings(List<PublicSetting> settings, RocketChatApiException error) {
+
+    }
+
+    @Override
+    public void onListCustomEmoji(List<Emoji> emojis, RocketChatApiException error) {
+
+    }
+
+    @Override
+    public void onGetSubscriptions(List<Subscription> subscriptions, RocketChatApiException error) {
+
+    }
+
+    @Override
+    public void onMessage(String roomId, Message message) {
+
+    }
+
+
+    @Override
+    public void onUserRoles(List<User> users, RocketChatApiException error) {
 
     }
 }

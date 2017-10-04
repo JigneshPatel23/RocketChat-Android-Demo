@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.rocketchat.common.utils.Utils;
-import com.rocketchat.core.model.SubscriptionObject;
+import com.rocketchat.core.model.Subscription;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -30,10 +30,10 @@ import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
 
 public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> {
 
-    private List<SubscriptionObject> roomObjects;
+    private List<Subscription> roomObjects;
     Context context;
 
-    public RoomAdapter(List<SubscriptionObject> roomObjects, Context context) {
+    public RoomAdapter(List<Subscription> roomObjects, Context context) {
         this.roomObjects = roomObjects;
         this.context = context;
     }
@@ -49,7 +49,7 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> 
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int position) {
-        final String roomName = roomObjects.get(position).getRoomName();
+        final String roomName = roomObjects.get(position).name();
         holder.textView.setText(roomName);
         final Drawable drawable = UserAvatarHelper.getTextDrawable(roomName, context);
 
@@ -78,7 +78,7 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> 
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(context, ChatActivity_.class);
-                intent.putExtra("roomId",roomObjects.get(position).getRoomId());
+                intent.putExtra("roomId",roomObjects.get(position).roomId());
                 context.startActivity(intent);
             }
         });

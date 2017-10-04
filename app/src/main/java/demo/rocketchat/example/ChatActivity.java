@@ -9,12 +9,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.rocketchat.common.RocketChatException;
 import com.rocketchat.common.data.lightdb.collection.Collection;
 import com.rocketchat.common.data.lightdb.document.UserDocument;
-import com.rocketchat.common.data.model.ErrorObject;
-import com.rocketchat.common.data.model.UserObject;
-import com.rocketchat.core.RocketChatAPI;
-import com.rocketchat.core.model.RocketChatMessage;
+import com.rocketchat.core.ChatRoom;
+import com.rocketchat.core.RocketChatClient;
+import com.rocketchat.core.callback.HistoryCallback;
+import com.rocketchat.core.callback.MessageCallback;
 import com.stfalcon.chatkit.messages.MessageInput;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
@@ -55,8 +56,8 @@ public class ChatActivity extends MyAdapterActivity implements
     @ViewById(R.id.input)
     MessageInput input;
 
-    RocketChatAPI api;
-    RocketChatAPI.ChatRoom chatRoom;
+    RocketChatClient api;
+    ChatRoom chatRoom;
     String userId;
     /**
      * This will restrict total messages to 1000
@@ -85,15 +86,14 @@ public class ChatActivity extends MyAdapterActivity implements
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         api = ((RocketChatApplication) getApplicationContext()).getRocketChatAPI();
-        api.getConnectivityManager().register(this);
 
         String roomId = getIntent().getStringExtra("roomId");
-        userId = roomId.replace(api.getMyUserId(), "");
+        userId = roomId.replace(api.getWebsocketImpl().getMyUserId(), "");
         System.out.println("room id is " + roomId);
         chatRoom = api.getChatRoomFactory().getChatRoomById(roomId);
-        getSupportActionBar().setTitle(chatRoom.getRoomData().getRoomName());
+        getSupportActionBar().setTitle(chatRoom.getRoomData().name());
         if (getCurrentUser() !=null) {
-            updateUserStatus(getCurrentUser().getStatus().toString());
+            updateUserStatus(getCurrentUser().status().toString());
         }
 
         api.getDbManager().getUserCollection().register(userId, new Collection.Observer<UserDocument>() {
@@ -101,10 +101,10 @@ public class ChatActivity extends MyAdapterActivity implements
             public void onUpdate(Collection.Type type, UserDocument document) {
                 switch (type) {
                     case ADDED:
-                        updateUserStatus(document.getStatus().toString());
+                        updateUserStatus(document.status().toString());
                         break;
                     case CHANGED:
-                        updateUserStatus(document.getStatus().toString());
+                        updateUserStatus(document.status().toString());
                         break;
                     case REMOVED:
                         updateUserStatus("UNAVAILABLE");
@@ -115,7 +115,17 @@ public class ChatActivity extends MyAdapterActivity implements
 
         chatRoom.subscribeRoomMessageEvent(null, this);
         chatRoom.subscribeRoomTypingEvent(null, this);
-        chatRoom.getChatHistory(50, lastTimestamp, null, this);
+        chatRoom.getChatHistory(50, lastTimestamp, null, new HistoryCallback() {
+            @Override
+            public void onLoadHistory(List<com.rocketchat.core.model.Message> list, int unreadNotLoaded) {
+                ChatActivity.this.onLoadHistory(list, unreadNotLoaded);
+            }
+
+            @Override
+            public void onError(RocketChatException error) {
+
+            }
+        });
 
 
         super.onCreate(savedInstanceState);
@@ -164,7 +174,7 @@ public class ChatActivity extends MyAdapterActivity implements
     }
 
     private void initAdapter() {
-        messagesAdapter = new MessagesListAdapter<>(api.getMyUserId(), null);
+        messagesAdapter = new MessagesListAdapter<>(api.getWebsocketImpl().getMyUserId(), null);
         messagesAdapter.enableSelectionMode(this);
         messagesAdapter.setLoadMoreListener(this);
         messagesAdapter.setDateHeadersFormatter(this);
@@ -207,19 +217,7 @@ public class ChatActivity extends MyAdapterActivity implements
         };
     }
 
-    @Override
-    public void onLoadHistory(List<RocketChatMessage> list, int unreadNotLoaded, ErrorObject error) {
-        lastTimestamp = list.get(list.size() - 1).getMsgTimestamp();
-        final ArrayList<Message> messages = new ArrayList<>();
-        for (RocketChatMessage message : list) {
-            switch (message.getMsgType()) {
-                case TEXT:
-                    messages.add(new Message(message.getMessageId(), new User(message.getSender().getUserId(), message.getSender().getUserName(), null, true), message.getMessage(), message.getMsgTimestamp()));
-                    break;
-            }
-        }
-        updateMessage(messages);
-    }
+
 
     @UiThread
     void updateMessage(ArrayList<Message> messages) {
@@ -228,8 +226,8 @@ public class ChatActivity extends MyAdapterActivity implements
 
     @UiThread
     @Override
-    public void onMessage(String roomId, RocketChatMessage message) {
-        messagesAdapter.addToStart(new Message(message.getMessageId(), new User(message.getSender().getUserId(), message.getSender().getUserName(), null, true), message.getMessage(), message.getMsgTimestamp()), true);
+    public void onMessage(String roomId, com.rocketchat.core.model.Message message) {
+        messagesAdapter.addToStart(new Message(message.id(), new User(message.sender().id(), message.sender().username(), null, true), message.message(), new Date(message.timestamp())), true);
     }
 
     @UiThread
@@ -239,7 +237,7 @@ public class ChatActivity extends MyAdapterActivity implements
             getSupportActionBar().setSubtitle(user + " is typing...");
         } else {
             if (getCurrentUser() != null) {
-                updateUserStatus(getCurrentUser().getStatus().toString());
+                updateUserStatus(getCurrentUser().status().toString());
             } else {
                 getSupportActionBar().setSubtitle("");
             }
@@ -266,29 +264,33 @@ public class ChatActivity extends MyAdapterActivity implements
                 .setAction("RETRY", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        api.reconnect();
+                        api.getWebsocketImpl().getSocket().reconnect();
                     }
                 })
                 .show();
 
     }
 
+
     @UiThread
     @Override
-    public void onConnectError(Exception websocketException) {
+    public void onConnectError(Throwable websocketException) {
         AppUtils.getSnackbar(findViewById(R.id.chat_activity), R.string.connection_error)
                 .setAction("RETRY", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        api.reconnect();
+                        api.getWebsocketImpl().getSocket().reconnect();
+
                     }
                 })
                 .show();
     }
 
+
+
     @Override
     protected void onDestroy() {
-        api.getConnectivityManager().unRegister(this);
+        api.getWebsocketImpl().getConnectivityManager().unRegister(this);
         super.onDestroy();
     }
 
@@ -299,14 +301,48 @@ public class ChatActivity extends MyAdapterActivity implements
 
     @Override
     public boolean onSubmit(CharSequence input) {
-        chatRoom.sendMessage(input.toString(), this);
+        chatRoom.sendMessage(input.toString(), new MessageCallback.MessageAckCallback() {
+            @Override
+            public void onMessageAck(com.rocketchat.core.model.Message message) {
+
+            }
+
+            @Override
+            public void onError(RocketChatException error) {
+
+            }
+        });
         return true;
+    }
+
+    @UiThread
+    public void onLoadHistory(List<com.rocketchat.core.model.Message> list, int unreadNotLoaded) {
+        lastTimestamp = new Date(list.get(list.size() - 1).timestamp());
+        final ArrayList<Message> messages = new ArrayList<>();
+        for (com.rocketchat.core.model.Message message : list) {
+            switch (message.getMsgType()) {
+                case TEXT:
+                    messages.add(new Message(message.id(), new User(message.sender().id(), message.sender().username(), null, true), message.message(), new Date(message.timestamp())));
+                    break;
+            }
+        }
+        updateMessage(messages);
     }
 
     @Override
     public void onLoadMore(int page, int totalItemsCount) {
         if (totalItemsCount < TOTAL_MESSAGES_COUNT) {
-            chatRoom.getChatHistory(50, lastTimestamp, null, this);
+            chatRoom.getChatHistory(50, lastTimestamp, null, new HistoryCallback() {
+                @Override
+                public void onLoadHistory(List<com.rocketchat.core.model.Message> list, int unreadNotLoaded) {
+                    ChatActivity.this.onLoadHistory(list, unreadNotLoaded);
+                }
+
+                @Override
+                public void onError(RocketChatException error) {
+
+                }
+            });
         }
     }
 
