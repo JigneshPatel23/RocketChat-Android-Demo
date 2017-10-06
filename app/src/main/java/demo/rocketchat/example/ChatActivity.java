@@ -15,7 +15,9 @@ import com.rocketchat.common.data.lightdb.document.UserDocument;
 import com.rocketchat.core.ChatRoom;
 import com.rocketchat.core.RocketChatClient;
 import com.rocketchat.core.callback.HistoryCallback;
+import com.rocketchat.core.callback.LoginCallback;
 import com.rocketchat.core.callback.MessageCallback;
+import com.rocketchat.core.model.Token;
 import com.stfalcon.chatkit.messages.MessageInput;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
@@ -90,6 +92,7 @@ public class ChatActivity extends MyAdapterActivity implements
         String roomId = getIntent().getStringExtra("roomId");
         userId = roomId.replace(api.getWebsocketImpl().getMyUserId(), "");
         System.out.println("room id is " + roomId);
+        api.getWebsocketImpl().getConnectivityManager().register(this);
         chatRoom = api.getChatRoomFactory().getChatRoomById(roomId);
         getSupportActionBar().setTitle(chatRoom.getRoomData().name());
         if (getCurrentUser() !=null) {
@@ -246,20 +249,36 @@ public class ChatActivity extends MyAdapterActivity implements
 
 
     @UiThread
-    @Override
-    public void onConnect(String sessionID) {
-        api.subscribeActiveUsers(null);
-        api.subscribeUserData(null);
-        chatRoom.subscribeRoomMessageEvent(null, this);
-        chatRoom.subscribeRoomTypingEvent(null, this);
+    void showConnectedSnackbar() {
         Snackbar
                 .make(findViewById(R.id.chat_activity), R.string.connected, Snackbar.LENGTH_LONG)
                 .show();
     }
 
+    @Override
+    public void onConnect(String sessionID) {
+        String token = ((RocketChatApplication)getApplicationContext()).getToken();
+        api.loginUsingToken(token, new LoginCallback() {
+            @Override
+            public void onLoginSuccess(Token token) {
+                api.subscribeActiveUsers(null);
+                api.subscribeUserData(null);
+                chatRoom.subscribeRoomMessageEvent(null, ChatActivity.this);
+                chatRoom.subscribeRoomTypingEvent(null, ChatActivity.this);
+            }
+
+            @Override
+            public void onError(RocketChatException error) {
+
+            }
+        });
+        showConnectedSnackbar();
+    }
+
     @UiThread
     @Override
     public void onDisconnect(boolean closedByServer) {
+        chatRoom.unSubscribeAllEvents();
         AppUtils.getSnackbar(findViewById(R.id.chat_activity), R.string.disconnected_from_server)
                 .setAction("RETRY", new View.OnClickListener() {
                     @Override
@@ -275,6 +294,7 @@ public class ChatActivity extends MyAdapterActivity implements
     @UiThread
     @Override
     public void onConnectError(Throwable websocketException) {
+        chatRoom.unSubscribeAllEvents();
         AppUtils.getSnackbar(findViewById(R.id.chat_activity), R.string.connection_error)
                 .setAction("RETRY", new View.OnClickListener() {
                     @Override
@@ -317,16 +337,18 @@ public class ChatActivity extends MyAdapterActivity implements
 
     @UiThread
     public void onLoadHistory(List<com.rocketchat.core.model.Message> list, int unreadNotLoaded) {
-        lastTimestamp = new Date(list.get(list.size() - 1).timestamp());
-        final ArrayList<Message> messages = new ArrayList<>();
-        for (com.rocketchat.core.model.Message message : list) {
-            switch (message.getMsgType()) {
-                case TEXT:
-                    messages.add(new Message(message.id(), new User(message.sender().id(), message.sender().username(), null, true), message.message(), new Date(message.timestamp())));
-                    break;
+        if (list.size() > 0) {
+            lastTimestamp = new Date(list.get(list.size() - 1).timestamp());
+            final ArrayList<Message> messages = new ArrayList<>();
+            for (com.rocketchat.core.model.Message message : list) {
+                switch (message.getMsgType()) {
+                    case TEXT:
+                        messages.add(new Message(message.id(), new User(message.sender().id(), message.sender().username(), null, true), message.message(), new Date(message.timestamp())));
+                        break;
+                }
             }
+            updateMessage(messages);
         }
-        updateMessage(messages);
     }
 
     @Override

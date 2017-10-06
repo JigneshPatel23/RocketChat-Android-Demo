@@ -23,4 +23,4 @@
     @com.squareup.moshi.* <methods>;
 }
 -keep @com.squareup.moshi.JsonQualifier interface *
--keepclassmembers class com.rocketchat.common.data.model.** { <fields>; }
+-keepclassmembers class com.rocketchat.common.data.model.** {*;}

@@ -66,9 +66,7 @@ public class LoginActivity extends MyAdapterActivity {
 
     @UiThread
     void onLoginSuccess(Token token) {
-        editor.putString("username", username.getText().toString());
-        editor.putString("password", password.getText().toString());
-        editor.commit();
+        ((RocketChatApplication)getApplicationContext()).setToken(token.getAuthToken());
         AppUtils.showToast(LoginActivity.this, "Login successful", true);
         Intent intent = new Intent(LoginActivity.this, RoomActivity_.class);
         startActivity(intent);
@@ -89,6 +87,9 @@ public class LoginActivity extends MyAdapterActivity {
                 api.login(uname, passwd, new LoginCallback() {
                     @Override
                     public void onLoginSuccess(Token token) {
+                        editor.putString("username", username.getText().toString());
+                        editor.putString("password", password.getText().toString());
+                        editor.commit();
                         LoginActivity.this.onLoginSuccess(token);
                     }
 

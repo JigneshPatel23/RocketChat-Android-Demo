@@ -30,12 +30,15 @@ import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
 
 public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> {
 
+
+
     private List<Subscription> roomObjects;
     Context context;
 
     public RoomAdapter(List<Subscription> roomObjects, Context context) {
         this.roomObjects = roomObjects;
         this.context = context;
+
     }
 
 
@@ -52,6 +55,7 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> 
         final String roomName = roomObjects.get(position).name();
         holder.textView.setText(roomName);
         final Drawable drawable = UserAvatarHelper.getTextDrawable(roomName, context);
+
 
         Picasso.with(context)
                 .load(Utils.getAvatar(roomName))

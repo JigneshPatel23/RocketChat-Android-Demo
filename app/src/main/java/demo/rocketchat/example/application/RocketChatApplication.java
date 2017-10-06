@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.rocketchat.common.network.ReconnectionStrategy;
 import com.rocketchat.common.utils.Logger;
+import com.rocketchat.common.utils.Utils;
 import com.rocketchat.core.RocketChatClient;
 import com.squareup.picasso.Picasso;
 
@@ -18,6 +19,9 @@ public class RocketChatApplication extends Application {
     private static String serverurl = "wss://demo.rocket.chat/websocket";
     private static String baseUrl = "https://demo.rocket.chat/api/v1/";
 
+
+    public String token;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -26,6 +30,8 @@ public class RocketChatApplication extends Application {
                 .restBaseUrl(baseUrl)
                 .logger(logger)
                 .build();
+
+        Utils.DOMAIN_NAME = "https://demo.rocket.chat";
 
         client.setReconnectionStrategy(new ReconnectionStrategy(20, 3000));
 
@@ -57,4 +63,12 @@ public class RocketChatApplication extends Application {
             System.out.println(format + " " +  args);
         }
     };
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getToken() {
+        return token;
+    }
 }

@@ -11,7 +11,9 @@ import android.view.View;
 import com.rocketchat.common.RocketChatException;
 import com.rocketchat.common.listener.SimpleListCallback;
 import com.rocketchat.core.RocketChatClient;
+import com.rocketchat.core.callback.LoginCallback;
 import com.rocketchat.core.model.Subscription;
+import com.rocketchat.core.model.Token;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
@@ -82,14 +84,32 @@ public class RoomActivity extends MyAdapterActivity {
         return true;
     }
 
+
     @UiThread
-    @Override
-    public void onConnect(String sessionID) {
-//        api.subscribeActiveUser(null);
-//        api.subscribeUserData(null);
+    void showConnectedSnackbar() {
         Snackbar
                 .make(findViewById(R.id.activity_room), R.string.connected, Snackbar.LENGTH_LONG)
                 .show();
+    }
+
+    @Override
+    public void onConnect(String sessionID) {
+
+        String token = ((RocketChatApplication)getApplicationContext()).getToken();
+        api.loginUsingToken(token, new LoginCallback() {
+            @Override
+            public void onLoginSuccess(Token token) {
+                api.subscribeActiveUsers(null);
+                api.subscribeUserData(null);
+            }
+
+            @Override
+            public void onError(RocketChatException error) {
+
+            }
+        });
+
+        showConnectedSnackbar();
     }
 
     @UiThread
